@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkSwift | Next-Gen URL Shortener</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="LinkSwift is a premium, high-speed URL shortener with real-time analytics and custom aliases.">
+    <meta name="keywords" content="URL shortener, link management, analytics, custom aliases, fast links">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Icons & QR -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.4);
+            --secondary: #ec4899;
+            --secondary-glow: rgba(236, 72, 153, 0.4);
+            --bg: #030712;
+            --surface: rgba(17, 24, 39, 0.7);
+            --surface-hover: rgba(31, 41, 55, 0.8);
+            --text: #f9fafb;
+            --text-muted: #9ca3af;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shine: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Animated Background */
+        .bg-blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            filter: blur(100px);
+        }
+
+        .blob {
+            position: absolute;
+            width: 40vw;
+            height: 40vw;
+            border-radius: 50%;
+            opacity: 0.15;
+            animation: move 20s infinite alternate;
+        }
+
+        .blob-1 {
+            background: var(--primary);
+            top: -10%;
+            left: -10%;
+        }
+
+        .blob-2 {
+            background: var(--secondary);
+            bottom: -10%;
+            right: -10%;
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            background: #8b5cf6;
+            top: 40%;
+            left: 30%;
+            animation-delay: -10s;
+        }
+
+        @keyframes move {
+            from { transform: translate(0, 0) scale(1); }
+            to { transform: translate(10%, 10%) scale(1.2); }
+        }
+
+        /* Layout */
+        .app-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            width: 100%;
+            flex: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+            animation: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .logo-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .logo-icon {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 0.75rem;
+            border-radius: 16px;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            background: linear-gradient(to right, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            max-width: 500px;
+            margin: 1rem auto 0;
+            font-weight: 400;
+        }
+
+        /* Main Card */
+        .glass-card {
+            background: var(--surface);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 3rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .glass-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(135deg, var(--glass-shine) 0%, transparent 40%, transparent 60%, var(--glass-shine) 100%);
+            pointer-events: none;
+        }
+
+        /* Form Elements */
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .field-group {
+            position: relative;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            margin-left: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-inner {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1.25rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.25rem 1.25rem 1.25rem 3.5rem;
+            color: white;
+            font-size: 1.1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        .alias-group {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .alias-prefix {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 0 1.25rem;
+            display: flex;
+            align-items: center;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .shorten-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), #4f46e5);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 1.25rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            box-shadow: 0 10px 20px -5px var(--primary-glow);
+        }
+
+        .shorten-btn:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 20px 30px -10px var(--primary-glow);
+            background: linear-gradient(135deg, #4f46e5, var(--primary));
+        }
+
+        .shorten-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* Result Section */
+        #resultArea {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--glass-border);
+            display: none;
+            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .result-card {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 24px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .short-url {
+            color: #c7d2fe;
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .icon-btn.copy-btn {
+            background: var(--primary);
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            gap: 0.5rem;
+        }
+
+        /* Dashboard/Stats Section */
+        .recent-section {
+            margin-top: 5rem;
+            animation: fadeInUp 1s ease-out 0.4s both;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .mini-card {
+            background: var(--surface);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .mini-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            background: var(--surface-hover);
+            box-shadow: 0 15px 30px -10px rgba(0,0,0,0.5);
+        }
+
+        .mini-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .mini-card-stats {
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+            padding: 0.25rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .mini-card-url {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: white;
+            margin-bottom: 0.5rem;
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .mini-card-dest {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            word-break: break-all;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loader {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .toast {
+            background: #1f2937;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        footer {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 640px) {
+            h1 { font-size: 2.5rem; }
+            .glass-card { padding: 1.5rem; }
+            .alias-group { flex-direction: column; }
+            .alias-prefix { padding: 0.75rem; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="app-container">
+        <header>
+            <div class="logo-container">
+                <div class="logo-icon">
+                    <i data-lucide="zap" style="color: white; width: 32px; height: 32px;"></i>
+                </div>
+                <h1>LinkSwift</h1>
+            </div>
+            <p class="subtitle">Experience the next generation of link management. Fast, secure, and beautiful.</p>
+        </header>
+
+        <main>
+            <div class="glass-card" id="mainCard">
+                <div class="input-wrapper">
+                    <div class="field-group">
+                        <label class="field-label">Long Destination URL</label>
+                        <div class="input-inner">
+                            <i data-lucide="link" class="input-icon"></i>
+                            <input type="url" id="longUrl" placeholder="https://example.com/very-long-url-path..." required>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Custom Alias <span style="font-weight: 400; opacity: 0.6;">(Optional)</span></label>
+                        <div class="alias-group">
+                            <div class="alias-prefix" id="baseUrlPrefix">localhost:8000/</div>
+                            <div class="input-inner" style="flex: 1;">
+                                <i data-lucide="at-sign" class="input-icon"></i>
+                                <input type="text" id="customCode" placeholder="my-custom-link" style="padding-left: 3.5rem;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="toggleAdvanced" style="background: transparent; border: none; color: var(--text-muted); font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                        <i data-lucide="settings-2" style="width: 16px;"></i> Advanced Options
+                    </button>
+
+                    <div id="advancedOptions" style="display: none; margin-top: 1.5rem; border-top: 1px dashed var(--glass-border); padding-top: 1.5rem; animation: slideUpFade 0.4s ease;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="field-group">
+                                <label class="field-label">Expiration Date</label>
+                                <input type="datetime-local" id="expiresAt" style="padding-left: 1.25rem;">
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label">Secret Password</label>
+                                <div class="input-inner">
+                                    <i data-lucide="lock" class="input-icon"></i>
+                                    <input type="password" id="linkPassword" placeholder="••••••••" style="padding-left: 3.5rem;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="shorten-btn" id="shortenBtn">
+                        <span id="btnText">Shorten Now</span>
+                        <div id="loader" class="loader"></div>
+                        <i data-lucide="arrow-right" id="btnIcon"></i>
+                    </button>
+                </div>
+
+                <div id="resultArea">
+                    <div class="result-title" style="justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <i data-lucide="sparkles" style="color: var(--secondary);"></i>
+                            Success! Your link is ready
+                        </div>
+                        <div id="qrPreview" style="background: white; padding: 0.5rem; border-radius: 12px; cursor: pointer;" title="Download QR">
+                            <canvas id="qrcode"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <a href="#" id="shortLink" class="short-url" target="_blank"></a>
+                        <div class="action-buttons">
+                            <button class="icon-btn" id="editBtn" title="Edit Link">
+                                <i data-lucide="edit-3"></i>
+                            </button>
+                            <button class="icon-btn copy-btn" id="copyBtn">
+                                <i data-lucide="copy"></i>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; display: flex; justify-content: center;">
+                        <a href="#" id="statsLink" style="color: var(--text-muted); text-decoration: none; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; transition: color 0.2s;">
+                            View Detailed Analytics <i data-lucide="bar-chart-3" style="width: 18px;"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <section class="recent-section">
+                <div class="section-header">
+                    <h2 class="section-title">Recent Links</h2>
+                    <button class="icon-btn" id="refreshLinks" title="Refresh">
+                        <i data-lucide="refresh-cw" style="width: 18px;"></i>
+                    </button>
+                </div>
+                
+                <div class="links-grid" id="linksGrid">
+                    <!-- Placeholder/Empty State -->
+                    <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-muted);">
+                        <i data-lucide="history" style="width: 48px; height: 48px; margin-bottom: 1rem; opacity: 0.2;"></i>
+                        <p>No shortened links yet. Start shortening!</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 LinkSwift Technologies. Optimized for performance and privacy.</p>
+        </footer>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Elements
+        const shortenBtn = document.getElementById('shortenBtn');
+        const longUrlInput = document.getElementById('longUrl');
+        const customCodeInput = document.getElementById('customCode');
+        const resultArea = document.getElementById('resultArea');
+        const shortLink = document.getElementById('shortLink');
+        const statsLink = document.getElementById('statsLink');
+        const copyBtn = document.getElementById('copyBtn');
+        const btnText = document.getElementById('btnText');
+        const btnIcon = document.getElementById('btnIcon');
+        const loader = document.getElementById('loader');
+        const mainCard = document.getElementById('mainCard');
+        const linksGrid = document.getElementById('linksGrid');
+        const baseUrlPrefix = document.getElementById('baseUrlPrefix');
+        const toastContainer = document.getElementById('toastContainer');
+
+        // State
+        let recentLinks = JSON.parse(localStorage.getItem('recentLinks') || '[]');
+
+        // Initialize display
+        baseUrlPrefix.textContent = window.location.host + '/';
+        renderRecentLinks();
+
+        // Helpers
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `
+                <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" style="color: ${type === 'success' ? '#10b981' : '#ef4444'}"></i>
+                <span>${message}</span>
+            `;
+            toastContainer.appendChild(toast);
+            lucide.createIcons({ props: { portal: toast } });
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.4s';
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
+        function renderRecentLinks() {
+            if (recentLinks.length === 0) return;
+            
+            linksGrid.innerHTML = '';
+            recentLinks.slice(0, 6).forEach(link => {
+                const card = document.createElement('div');
+                card.className = 'mini-card';
+                card.onclick = () => window.open(link.shortUrl, '_blank');
+                
+                const displayUrl = link.shortUrl.replace('http://', '').replace('https://', '');
+                
+                card.innerHTML = `
+                    <div class="mini-card-header">
+                        <div class="mini-card-stats">Active</div>
+                        <i data-lucide="external-link" style="width: 16px; color: var(--text-muted);"></i>
+                    </div>
+                    <span class="mini-card-url">${displayUrl}</span>
+                    <p class="mini-card-dest">${link.longUrl}</p>
+                `;
+                linksGrid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        const toggleAdvanced = document.getElementById('toggleAdvanced');
+        const advancedOptions = document.getElementById('advancedOptions');
+        const expiresAtInput = document.getElementById('expiresAt');
+        const passwordInput = document.getElementById('linkPassword');
+        const qrCanvas = document.getElementById('qrcode');
+
+        // Toggle Advanced
+        toggleAdvanced.onclick = () => {
+            const isVisible = advancedOptions.style.display === 'block';
+            advancedOptions.style.display = isVisible ? 'none' : 'block';
+            toggleAdvanced.style.color = isVisible ? 'var(--text-muted)' : 'var(--primary)';
+            lucide.createIcons();
+        };
+
+        // Logic
+        shortenBtn.addEventListener('click', async () => {
+            const longUrl = longUrlInput.value.trim();
+            const customCode = customCodeInput.value.trim();
+            const expiresAt = expiresAtInput.value;
+            const password = passwordInput.value;
+            
+            if (!longUrl) {
+                showToast('Please enter a destination URL', 'error');
+                return;
+            }
+
+            // Simple validation
+            if (!longUrl.startsWith('http')) {
+                showToast('URL must start with http/https', 'error');
+                return;
+            }
+
+            // Loading state
+            shortenBtn.disabled = true;
+            btnText.style.display = 'none';
+            btnIcon.style.display = 'none';
+            loader.style.display = 'block';
+            resultArea.style.display = 'none';
+
+            try {
+                const response = await fetch('/shorten', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        long_url: longUrl,
+                        custom_code: customCode || null,
+                        expires_at: expiresAt || null,
+                        password: password || null
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to shorten URL');
+                }
+
+                const fullShortUrl = window.location.origin + '/' + data.short_code;
+                
+                shortLink.href = fullShortUrl;
+                shortLink.textContent = window.location.host + '/' + data.short_code;
+                statsLink.href = `/api/v1/${data.short_code}/stats`;
+                
+                // Generate QR
+                QRCode.toCanvas(qrCanvas, fullShortUrl, { width: 80, margin: 1 }, function (error) {
+                    if (error) console.error(error);
+                });
+
+                // Show result
+                resultArea.style.display = 'block';
+                mainCard.style.transform = 'scale(1.01)';
+                setTimeout(() => mainCard.style.transform = 'scale(1)', 200);
+
+                // Update activity
+                const newLink = { 
+                    shortUrl: fullShortUrl, 
+                    longUrl: data.long_url, 
+                    code: data.short_code,
+                    timestamp: new Date().toISOString()
+                };
+                
+                recentLinks = [newLink, ...recentLinks.filter(l => l.code !== data.short_code)].slice(0, 10);
+                localStorage.setItem('recentLinks', JSON.stringify(recentLinks));
+                renderRecentLinks();
+
+                showToast('Successfully shortened!');
+                
+                // Reset inputs
+                longUrlInput.value = '';
+                customCodeInput.value = '';
+
+            } catch (error) {
+                showToast(error.message, 'error');
+            } finally {
+                shortenBtn.disabled = false;
+                btnText.style.display = 'block';
+                btnIcon.style.display = 'block';
+                loader.style.display = 'none';
+            }
+        });
+
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(shortLink.href);
+            const originalHtml = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i data-lucide="check"></i> <span>Copied!</span>';
+            copyBtn.style.background = '#10b981';
+            lucide.createIcons({ props: { portal: copyBtn } });
+            
+            setTimeout(() => {
+                copyBtn.innerHTML = originalHtml;
+                copyBtn.style.background = 'var(--primary)';
+                lucide.createIcons({ props: { portal: copyBtn } });
+            }, 2000);
+        });
+
+        // Handle Enter key
+        longUrlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') shortenBtn.click();
+        });
+        customCodeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') shortenBtn.click();
+        });
+    </script>
+</body>
+</html>
