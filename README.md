@@ -1,10 +1,33 @@
 # Production URL Shortener Build Notes
 
-## System Overview
-- **Framework**: FastAPI (Asynchronous Python)
-- **Primary Database**: PostgreSQL (Async SQLAlchemy)
-- **Caching Layer**: Redis (For hot URLs and Rate Limiting)
-- **Deployment**: Dockerized services
+## ⚙️ Tech Stack
+
+### Backend
+- **Framework**: FastAPI (High-performance async Python framework)
+- **Language**: Python 3
+- **ORM**: SQLAlchemy with Asyncio support
+- **Database Migrations**: Alembic
+- **Database Engine**: SQLite (via `aiosqlite` for local dev) or PostgreSQL (via `asyncpg` for production)
+- **Caching & Rate Limiting**: Redis
+- **Data Validation**: Pydantic
+- **Password Hashing**: Passlib (Bcrypt)
+
+### Frontend
+- **Structure**: Vanilla HTML5
+- **Styling**: Plain CSS (Glassmorphism design, custom animations)
+- **Logic**: Vanilla JavaScript
+- **Typography**: Google Fonts (Outfit)
+- **Icons**: Lucide Icons
+- **Utilities**: QRCode.js
+
+### Testing
+- **Unit & Integration Tests**: Pytest
+- **Async HTTP Client**: HTTPX
+- **Load Testing**: Locust
+
+### DevOps & Deployment
+- **Containerization**: Docker & Docker Compose
+- **Version Control**: Git & GitHub
 
 ## Key Architecture Decisions
 
