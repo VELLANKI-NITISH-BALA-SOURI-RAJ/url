@@ -29,6 +29,31 @@
 - **Containerization**: Docker & Docker Compose
 - **Version Control**: Git & GitHub
 
+## 📂 Folder Structure
+
+```text
+/
+├── alembic/              # Database migration configurations and scripts
+├── app/                  # Main FastAPI backend application
+│   ├── api/              # API routers and endpoints (v1)
+│   ├── core/             # Core configuration and utilities
+│   ├── db/               # Database session management
+│   ├── models/           # SQLAlchemy ORM models
+│   ├── schemas/          # Pydantic schemas for data validation
+│   ├── services/         # Business logic and caching
+│   └── main.py           # FastAPI application entry point
+├── frontend/             # Vanilla HTML/CSS/JS frontend
+│   └── index.html        # Main user interface
+├── tests/                # Pytest suites for automated testing
+│   ├── conftest.py       # Pytest fixtures
+│   └── test_url.py       # API integration tests
+├── docker-compose.yml    # Docker services configuration
+├── Dockerfile            # Application container image definition
+├── pytest.ini            # Pytest configuration
+├── requirements.txt      # Python dependencies
+└── setup_local.ps1       # Windows setup script for local development
+```
+
 ## Key Architecture Decisions
 
 ### 1. ID Generation Strategy (Base62)
