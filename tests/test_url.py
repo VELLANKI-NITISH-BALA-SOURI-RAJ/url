@@ -52,3 +52,23 @@ async def test_get_stats(client: AsyncClient):
 async def test_404_not_found(client: AsyncClient):
     response = await client.get("/nonexistentcode")
     assert response.status_code == 404
+
+@pytest.mark.asyncio
+async def test_update_alias(client: AsyncClient):
+    # Create a link
+    long_url = "https://www.google.com"
+    create_resp = await client.post("/shorten", json={"long_url": long_url})
+    short_code = create_resp.json()["short_code"]
+    
+    # Update alias
+    update_resp = await client.patch(
+        f"/shorten/{short_code}/code",
+        json={"long_url": long_url, "custom_code": "google-search"}
+    )
+    assert update_resp.status_code == 200
+    data = update_resp.json()
+    assert data["short_code"] == "google-search"
+    
+    # Check redirect with new code
+    response = await client.get("/google-search", follow_redirects=False)
+    assert response.status_code == 301
